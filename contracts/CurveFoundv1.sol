@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
+    event Attest(address indexed to, uint256 indexed tokenId);
+    event Revoke(address indexed to, uint256 indexed tokenId);
 
     bool public isSaleActive = false;
     address[] public whitelistedAddresses;
@@ -53,6 +55,33 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         _safeMint(msg.sender, newTokenId);
         // setTokenURI();  --> set the tokenURI of the tokenId just minted
         emit CurveNFTMinted(msg.sender, tokenId);
+    }
+
+    //Overridden transfer function
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override virtual {
+        require(from == address(0), "You cannot transfer this token");
+    }
+
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override virtual {
+        if (from == address(0)){
+            emit Attest(to, tokenId);
+        } else if (to == address(0)){
+            emit Revoke(to, tokenId);
+        }
+    }
+
+
+    //only owner of collection can burn the token 
+    function burn(uint256 _tokenId) public onlyOwner {
+        _burn(_tokenId);
     }
 
     //START MEMBERSHIP CODE
@@ -162,10 +191,6 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         require(success);
     }
 
-    // only contract owner can burn member token
-    function burn(uint256 _tokenId) public onlyOwner {
-        _burn(_tokenId);
-    }
 
     function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
         notRevealedUri = _notRevealedURI;
