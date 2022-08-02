@@ -71,10 +71,11 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         _burn(tokenId);
     } */
 
-    // member can update their membership by 10 years from now
-    function updateMembership() public {
-        userData[msg.sender] = block.timestamp + 10 * 365 days; // 10 year membership
-    }
+     // member can update their membership by 10 years from now
+    // User shouldn't be able to do anything to the expiry: member can update their membership by 10 years from now
+    // function updateMembership() public {
+    //     userData[msg.sender] = block.timestamp + 10 * 365 days; // 10 year membership
+    // }
 
     function deleteMembership() public {
         userData[msg.sender] = 0;
