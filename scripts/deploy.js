@@ -6,7 +6,7 @@ async function main() {
   const curveFoundv1 = await CurveFoundv1.deploy(
     "CurveClub",
     "CC",
-    "https://ipfs.io/ipfs/QmeAnbyCYZo6MiDhuQSn6imX5GSjJ62v6SZU6VuiJrP6J9/hidden_ghost.png"
+    "https://gateway.pinata.cloud/ipfs/QmNyDaAjpv3NN7Mrg7cycoghJjK6afJ2JBRHTBwcMvu9uM"
   );
   await curveFoundv1.deployed();
   console.log("Contract deployed at: ", curveFoundv1.address);

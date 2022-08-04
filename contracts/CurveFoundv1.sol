@@ -21,6 +21,10 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     string public notRevealedUri;
     uint256 public price = 3 ether;
     uint256 private _reserved = 0;
+    
+    string public constant ipfs = "https://gateway.pinata.cloud/ipfs/";
+    string private constant cid = "QmQ8rjW1MgZoXYshSUBtytxGPYsiWkDe5GgB7WsRhDUDTN";
+
 
     // uint256 public tokenId = 0;
     mapping(address => uint256) public addressPresaleMinted; // ensures user cannot purchase, transfer and then purchase another
@@ -53,10 +57,10 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         userData[msg.sender] = block.timestamp + 10 * 365 days;
         uint256 newTokenId = _tokenIds.current();
         _safeMint(msg.sender, newTokenId);
-        // setTokenURI();  --> set the tokenURI of the tokenId just minted
+        _setTokenURI(newTokenId, string(abi.encodePacked(ipfs, cid, newTokenId, ".png"))); // --> set the tokenURI of the tokenId just minted
         emit CurveNFTMinted(msg.sender, newTokenId); //changed this to new tokeid
 
-        _tokenIds.increment(); //added this
+        _tokenIds.increment(); 
     }
 
     //Overridden transfer function
