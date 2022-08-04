@@ -8,11 +8,11 @@ module.exports = {
   // add whatever networks you would like!
   networks: {
     hardhat: {},
-    /* rinkeby: {
-      url: process.env.RINKEBY_API_KEY,
-      accounts: process.env.PRIVATE_KEY,
+    rinkeby: {
+      url: process.env.QUICKNODE_API_KEY_URL,
+      accounts: [process.env.RINKEBY_PRIVATE_KEY]
     },
-    mainnet: {
+    /*mainnet: {
       url: process.env.MAINNET_API_KEY,
       accounts: process.env.PRIVATE_KEY,
     }, */

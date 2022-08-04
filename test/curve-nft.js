@@ -39,7 +39,7 @@ describe("CurveNFT", function () {
     // const userMembershipStartTime = await curveNFT.userData[owner.address];
     // console.log("Timestamp member minted", userMembershipStartTime)
 
-    const membershipLength = await curveNFT.howLongMember();
+    const membershipLength = await curveNFT.howLongMember(); //only one user one mint, so how can i test this better?
     console.log("how long member", membershipLength)
 
     // Example of a test

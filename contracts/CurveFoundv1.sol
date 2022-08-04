@@ -22,7 +22,7 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     uint256 public price = 3 ether;
     uint256 private _reserved = 0;
 
-    uint256 public tokenId = 0;
+    // uint256 public tokenId = 0;
     mapping(address => uint256) public addressPresaleMinted; // ensures user cannot purchase, transfer and then purchase another
     mapping(address => uint256) userData; // the date a user minted their NFT + 10 years (tracks time to expired)
 
@@ -54,7 +54,9 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         uint256 newTokenId = _tokenIds.current();
         _safeMint(msg.sender, newTokenId);
         // setTokenURI();  --> set the tokenURI of the tokenId just minted
-        emit CurveNFTMinted(msg.sender, tokenId);
+        emit CurveNFTMinted(msg.sender, newTokenId); //changed this to new tokeid
+
+        _tokenIds.increment(); //added this
     }
 
     //Overridden transfer function

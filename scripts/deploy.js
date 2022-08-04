@@ -13,12 +13,12 @@ async function main() {
   console.log("Contract Owner: ", owner.address);
 
   // set sale state to active
-  let tx = await curveFoundv1.saleActive(true);
+  // let tx = await curveFoundv1.saleActive(true);
 
-  // mint nft
-  let mint_tx = await curveFoundv1.mint(1, { value: "3000000000000000000" });
-  await mint_tx.wait();
-  console.log("NFT #1 Minted!");
+  // // mint nft
+  // let mint_tx = await curveFoundv1.mint(1, { value: "3000000000000000000" });
+  // await mint_tx.wait();
+  // console.log("NFT #1 Minted!");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
