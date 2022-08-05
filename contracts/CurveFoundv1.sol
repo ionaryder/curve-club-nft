@@ -8,29 +8,30 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
+    using Strings for uint256;
+
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
-    event Attest(address indexed to, uint256 indexed tokenId);
-    event Revoke(address indexed to, uint256 indexed tokenId);
 
     bool public isSaleActive = false;
-    address[] public whitelistedAddresses;
+    bool public isRevealed = false;
+
     bool public onlyWhiteListed = true;
-    uint256 public constant max_supply = 100;
-    uint256 public constant max_curve_mint = 1;
-    string public notRevealedUri;
+    address[] public whitelistedAddresses;
+
+    uint256 public constant MAX_SUPPLY = 100;
+    uint256 public constant MAX_CURVE_MINT = 1;
     uint256 public price = 3 ether;
-    uint256 private _reserved = 0;
-    
-    string public constant ipfs = "https://gateway.pinata.cloud/ipfs/";
-    string private constant cid = "QmQ8rjW1MgZoXYshSUBtytxGPYsiWkDe5GgB7WsRhDUDTN";
 
+    string public notRevealedUri;
+    string private cid;
 
-    // uint256 public tokenId = 0;
-    mapping(address => uint256) public addressPresaleMinted; // ensures user cannot purchase, transfer and then purchase another
-    mapping(address => uint256) userData; // the date a user minted their NFT + 10 years (tracks time to expired)
+    mapping(address => bool) public hasMinted; // ensures user cannot purchase, transfer and then purchase another
+    mapping(address => uint256) public dateMinted; // the time a user minted their NFT
 
     event CurveNFTMinted(address indexed sender, uint256 tokenId);
+    event Attest(address indexed to, uint256 indexed tokenId);
+    event Revoke(address indexed to, uint256 indexed tokenId);
 
     constructor(
         string memory _name,
@@ -84,7 +85,6 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         }
     }
 
-
     //only owner of collection can burn the token 
     function burn(uint256 _tokenId) public onlyOwner {
         _burn(_tokenId);
@@ -112,9 +112,6 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     //     userData[msg.sender] = block.timestamp + 10 * 365 days; // 10 year membership
     // }
 
-    function deleteMembership() public {
-        userData[msg.sender] = 0;
-    }
 
     function isMember() public view returns (bool) {
         if (userData[msg.sender] > 0) {
