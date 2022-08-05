@@ -36,10 +36,12 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     constructor(
         string memory _name,
         string memory _symbol,
+        string memory _cid,
         string memory _initNotRevealedUri
     ) ERC721(_name, _symbol) {
-        setNotRevealedURI(_initNotRevealedUri);
+        cid = _cid;
         _tokenIds.increment();
+        setNotRevealedURI(_initNotRevealedUri);
     }
 
     function mint(uint256 _mintAmount) external payable {
