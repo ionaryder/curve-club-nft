@@ -101,26 +101,14 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     modifier hasExpired() {
         // hasExpired modifier runs before any function called to make sure conditions are met.
         require(
-            userData[msg.sender] < block.timestamp,
+            (dateMinted[msg.sender] + 10 * 365 * 24 * 60 * 60) > block.timestamp,
             "Your membership has expired"
-        ); // This will check to see if it's expired. block.timestamp is now.
+        );
         _;
     }
 
-    /* function performMembersAction() public hasExpired  {
-        //burn token here
-        _burn(tokenId);
-    } */
-
-     // member can update their membership by 10 years from now
-    // User shouldn't be able to do anything to the expiry: member can update their membership by 10 years from now
-    // function updateMembership() public {
-    //     userData[msg.sender] = block.timestamp + 10 * 365 days; // 10 year membership
-    // }
-
-
     function isMember() public view returns (bool) {
-        if (userData[msg.sender] > 0) {
+        if (dateMinted[msg.sender] > 0) {
             return true;
         } else {
             return false;
@@ -128,9 +116,18 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     }
 
     function howLongMember() public view returns (uint256) {
-        if (userData[msg.sender] > 0)
-            return (userData[msg.sender] - block.timestamp);
+        if (dateMinted[msg.sender] > 0)
+            return (block.timestamp - dateMinted[msg.sender]);
         else return (0);
+    }
+
+    function timeTilExpire() public view hasExpired returns (uint256 timeLeft) {
+        if (dateMinted[msg.sender] > 0) {
+            timeLeft =
+                (dateMinted[msg.sender] + 10 * 365 * 24 * 60 * 60) -
+                block.timestamp;
+            return timeLeft;
+        }
     }
 
     //END MEMBERSHIP CODE
