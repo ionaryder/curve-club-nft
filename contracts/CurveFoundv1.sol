@@ -46,24 +46,28 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
 
     function mint(uint256 _mintAmount) external payable {
         require(isSaleActive == true, "Hold up! The sale is not active yet");
-        require(isWhitelisted(msg.sender), "user is not whitelisted");
+        require(isWhitelisted(msg.sender), "User is not whitelisted");
         require(_mintAmount > 0, "You can't buy 0 memberships");
         require(
-            _mintAmount <= max_curve_mint,
-            "max mint amount per session exceeded"
+            _mintAmount <= MAX_CURVE_MINT,
+            "max mint amount exceeded"
         );
         require(
-            (_tokenIds.current() + _mintAmount) <= max_supply - _reserved,
+            (_tokenIds.current() + _mintAmount) <= MAX_SUPPLY,
             "max NFT limit exceeded"
         );
+        require(
+            hasMinted[msg.sender] == false,
+            "You've already minted a membership!"
+        );
         require(msg.value >= price * _mintAmount, "insufficient funds");
-        userData[msg.sender] = block.timestamp + 10 * 365 days;
+        hasMinted[msg.sender] = true;
+        dateMinted[msg.sender] = block.timestamp;
         uint256 newTokenId = _tokenIds.current();
+        _tokenIds.increment();
         _safeMint(msg.sender, newTokenId);
-        _setTokenURI(newTokenId, string(abi.encodePacked(ipfs, cid, newTokenId, ".png"))); // --> set the tokenURI of the tokenId just minted
-        emit CurveNFTMinted(msg.sender, newTokenId); //changed this to new tokeid
 
-        _tokenIds.increment(); 
+        emit CurveNFTMinted(msg.sender, newTokenId);
     }
 
     //Overridden transfer function
