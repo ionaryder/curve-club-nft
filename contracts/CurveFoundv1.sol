@@ -19,9 +19,9 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     bool public onlyWhiteListed = true;
     address[] public whitelistedAddresses;
 
-    uint256 public constant MAX_SUPPLY = 100;
+    uint256 public MAX_SUPPLY = 100;
     uint256 public constant MAX_CURVE_MINT = 1;
-    uint256 public price = 3 ether;
+    uint256 public price = 0.1 ether;
 
     string public notRevealedUri;
     string private cid;
@@ -70,33 +70,63 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         emit CurveNFTMinted(msg.sender, newTokenId);
     }
 
-    //Overridden transfer function
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override virtual {
-        require(from == address(0), "You cannot transfer this token");
-    }
-
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override virtual {
-        if (from == address(0)){
-            emit Attest(to, tokenId);
-        } else if (to == address(0)){
-            emit Revoke(to, tokenId);
+        function tokenURI(uint256 _tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        require(
+            _tokenId <= _tokenIds.current(),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+        if (isRevealed == false) {
+            return notRevealedUri;
         }
+
+        string memory uriStart = "https://gateway.pinata.cloud/ipfs/";
+        string memory uriEnd = ".json";
+
+        return
+            string(
+                abi.encodePacked(
+                    uriStart,
+                    cid,
+                    "/",
+                    _tokenId.toString(),
+                    uriEnd
+                )
+            );
     }
 
-    //only owner of collection can burn the token 
-    function burn(uint256 _tokenId) public onlyOwner {
-        _burn(_tokenId);
+
+    function setActive(bool change) public onlyOwner {
+        isSaleActive = change;
     }
 
-    //START MEMBERSHIP CODE
+    // set nft price
+    function setPrice(uint256 _newPrice) external onlyOwner {
+        price = _newPrice;
+    }
+
+    function setMaxSupply(uint256 _supply) external onlyOwner {
+        MAX_SUPPLY = _supply;
+    }
+
+
+    function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
+        notRevealedUri = _notRevealedURI;
+    }
+
+    function setRevealed(bool _state) public onlyOwner {
+        isRevealed = _state;
+    }
+
+    function revokeMembership(uint256 tokenId) onlyOwner external {
+        dateMinted[ownerOf(tokenId)] = 0;
+        _burn(tokenId);
+    }
 
     modifier hasExpired() {
         // hasExpired modifier runs before any function called to make sure conditions are met.
@@ -130,21 +160,15 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         }
     }
 
-    //END MEMBERSHIP CODE
-
-    // START WHITELIST FUNCTIONS
-
     function setOnlyWhitelisted(bool _state) public onlyOwner {
         onlyWhiteListed = _state;
     }
 
-    // are you storing an array/ list of these addresses somewhere manually?
     function whitelistUsers(address[] calldata _users) public onlyOwner {
         delete whitelistedAddresses;
         whitelistedAddresses = _users;
     }
 
-    // returns if address is whitelisted or not
     function isWhitelisted(address _user) public view returns (bool) {
         for (uint256 i = 0; i < whitelistedAddresses.length; i++) {
             if (whitelistedAddresses[i] == _user) {
@@ -154,16 +178,24 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         return false;
     }
 
-    //END WHITELIST FUNCTIONS
-
-    // toggle sale active state
-    function saleActive(bool change) public onlyOwner {
-        isSaleActive = change;
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override virtual {
+        require(from == address(0), "You cannot transfer this token");
     }
 
-    // set nft price
-    function setPrice(uint256 _newPrice) external onlyOwner {
-        price = _newPrice;
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override virtual {
+        if (from == address(0)){
+            emit Attest(to, tokenId);
+        } else if (to == address(0)){
+            emit Revoke(to, tokenId);
+        }
     }
 
     function withdraw() public payable onlyOwner nonReentrant {
@@ -174,7 +206,4 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     }
 
 
-    function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
-        notRevealedUri = _notRevealedURI;
-    }
 }

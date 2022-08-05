@@ -1,54 +1,134 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("CurveNFT", function () {
-  it("", async function () {
+describe("CurveFoundv1", function () {
+  it("Curve NFT contract meets all tests", async function () {
+    const [owner, buyerAddress, randomAddress] = await ethers.getSigners();
     const CurveNFT = await ethers.getContractFactory("CurveFoundv1");
     const curveNFT = await CurveNFT.deploy(
       "CurveClub",
       "CC",
-      "https://ipfs.io/ipfs/QmeAnbyCYZo6MiDhuQSn6imX5GSjJ62v6SZU6VuiJrP6J9/hidden_ghost.png"
+      "QmPoVrETjJtPqvjae38aPJkQGhS26v6QYSapNNtLcyEoFy",
+      "https://gateway.pinata.cloud/ipfs/QmbYZHPnspN9M4jQSCh2ZvzxtVkEkFxMdLumTuBYfA8Evj.json"
     );
     await curveNFT.deployed();
-    const [owner] = await ethers.getSigners();
-    console.log("owner", owner.address)
 
-    expect(await curveNFT.whitelistUsers(['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266']));
-    console.log("Whitelist owner")
-    
-    expect(await curveNFT.max_supply()).to.equal(100);
-    console.log("Test that max supply is 100")
+    console.log("owner", owner.address);
 
-    expect(await curveNFT.onlyWhiteListed()).to.equal(true);
-    console.log("Test that only whitelisted users can mint")
+    // attempt mint before active
+    /* mint_tx = await curveNFT
+      .connect(buyerAddress)
+      .mint(1, { value: "3000000000000000000" });
+    console.log("Minted an NFT!"); */
+    // Success
 
-    expect(await curveNFT.saleActive(true));
-    console.log("Test saleActive value to true")
-
+    // setting sale to active
+    let setActive = await curveNFT.setActive(true);
     expect(await curveNFT.isSaleActive()).to.equal(true);
-    console.log("Test isSaleActive value is true")
+    console.log("Sale is Active!");
 
-    expect(await curveNFT.setPrice(0));
-    console.log("Setting price to 0 for mint")
+    let maxSupply = await curveNFT.setMaxSupply(5);
+    expect(await curveNFT.MAX_SUPPLY()).to.equal(5);
+    console.log("Max supply is 5");
 
-    //Q: how do i test without a mint price of 0
-    expect(await curveNFT.mint(1));
-    console.log("Test mint function: saleActive, whitelistedUser, sufficient funds, can only mint 1 NFT")
+    // is user whitelisted?
+    let buyerWallet = await curveNFT
+      .connect(buyerAddress)
+      .isWhitelisted(buyerAddress.address);
+    console.log("Address is not on WL");
 
-    //Not sure if this is working
-    // const userMembershipStartTime = await curveNFT.userData[owner.address];
-    // console.log("Timestamp member minted", userMembershipStartTime)
+    // set whitelist
+    let whiteList = await curveNFT.whitelistUsers([
+      owner.address,
+      buyerAddress.address,
+    ]);
 
-    const membershipLength = await curveNFT.howLongMember(); //only one user one mint, so how can i test this better?
-    console.log("how long member", membershipLength)
+    // check if user is whitelisted again
+    randomWallet = await curveNFT
+      .connect(buyerAddress)
+      .isWhitelisted(buyerAddress.address);
+    console.log("Address is on WL");
 
-    // Example of a test
+    // check price
+    const price = await curveNFT.price();
+    console.log(
+      `Mint price is ${ethers.utils.formatUnits(price, "ether")} ETH`
+    );
 
-    /* const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+    // mint nft
+    mint_tx = await curveNFT
+      .connect(buyerAddress)
+      .mint(1, { value: "3000000000000000000" });
+    console.log("Minted an NFT!");
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
+    // get tokenURI (should be the unreaveled )
+    let tokenURI = await curveNFT.tokenURI(1);
+    console.log("Non revealed tokenURI: ", tokenURI);
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!"); */
+    // set to revealed
+    await curveNFT.setRevealed(true);
+    let isRevealed = await curveNFT.isRevealed();
+    console.log("Revealed state: ", isRevealed);
+
+    // get tokenURI again (should show our real tokenURI)
+    tokenURI = await curveNFT.tokenURI(1);
+    console.log("Revealed tokenURI: ", tokenURI);
+
+    // check if member
+    let isMember = await curveNFT.connect(buyerAddress).isMember();
+    expect(isMember).to.equal(true);
+    console.log("Is buyer address a member? ", isMember);
+
+    // check if random address is a member
+    isMember = await curveNFT.connect(randomAddress).isMember();
+    expect(isMember).to.equal(false);
+    console.log("Is random address a member? ", isMember);
+
+    // check how long buyerAddress has been a member
+    let howLongMember = await curveNFT.connect(buyerAddress).howLongMember();
+    console.log(`You've been a member for ${howLongMember} seconds!`);
+
+    // check time till expiry
+    let timeTilExpire = await curveNFT.connect(buyerAddress).timeTilExpire();
+    console.log(`Your membership expires in ${timeTilExpire} seconds!`);
+
+    // fast forward time by 5 years
+    await network.provider.send("evm_increaseTime", [157680000]);
+    await network.provider.send("evm_mine");
+    console.log("Time fast forward by 5 years");
+
+    // check how long member again
+    howLongMember = await curveNFT.connect(buyerAddress).howLongMember();
+    console.log(`You've been a member for ${howLongMember} seconds!`);
+
+    // check time till expiry again
+    timeTilExpire = await curveNFT.connect(buyerAddress).timeTilExpire();
+    console.log(`Your membership expires in ${timeTilExpire} seconds!`);
+
+  
+    // fast forward 6 more years (to test hasExpired)
+    // await network.provider.send("evm_increaseTime", [189216000]);
+    // await network.provider.send("evm_mine");
+    // console.log("Time fast forward by 6 years");
+    // try to call timeTillExpire
+    // timeTilExpire = await curveNFT.connect(buyerAddress).timeTilExpire();
+    // result success => "Your membership has expired" 
+  
+
+    // test soulbound token
+
+    // Buyer tries to burn token
+    // await curveNFT.connect(buyerAddress).revokeMembership(1);
+    // console.log("only owner can burn")
+
+    // try to transfer token
+
+    // owner revokes a token
+    await curveNFT.connect(owner).revokeMembership(1);
+    console.log(`Revoked membership of ${buyerAddress.address}`);
+
+    // check if buyer address is a member
+    isMember = await curveNFT.connect(buyerAddress).isMember();
+    console.log(isMember);
   });
 });
