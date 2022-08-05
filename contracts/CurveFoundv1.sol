@@ -132,30 +132,6 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
 
     //END MEMBERSHIP CODE
 
-    //START RESERVE FUNCTIONS
-
-    function reserve(uint256 n) public onlyOwner {
-        _safeMint(msg.sender, n);
-        // right now you are not setting the tokenURI
-    }
-
-    function getReservedLeft() public view returns (uint256) {
-        return _reserved;
-    }
-
-    function claimReserved(uint256 _number, address _receiver)
-        external
-        onlyOwner
-    {
-        require(_number <= _reserved, "That would exceed the max reserved.");
-
-        _safeMint(_receiver, _number);
-
-        _reserved = _reserved - _number;
-    }
-
-    //END RESERVE FUNCTIONS
-
     // START WHITELIST FUNCTIONS
 
     function setOnlyWhitelisted(bool _state) public onlyOwner {
