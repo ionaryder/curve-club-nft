@@ -85,7 +85,7 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
             return notRevealedUri;
         }
 
-        string memory uriStart = "https://gateway.pinata.cloud/ipfs/";
+        string memory uriStart = "https://ipfs/";
         string memory uriEnd = ".json";
 
         return
@@ -121,6 +121,10 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
 
     function setRevealed(bool _state) public onlyOwner {
         isRevealed = _state;
+    }
+
+    function setCID(string memory newCID) public onlyOwner {
+        cid = newCID;
     }
 
     function revokeMembership(uint256 tokenId) onlyOwner external {

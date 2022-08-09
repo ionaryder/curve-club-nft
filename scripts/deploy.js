@@ -7,7 +7,7 @@ async function main() {
     "CurveClub",
     "CC",
     "QmPoVrETjJtPqvjae38aPJkQGhS26v6QYSapNNtLcyEoFy",
-    "https://gateway.pinata.cloud/ipfs/QmbYZHPnspN9M4jQSCh2ZvzxtVkEkFxMdLumTuBYfA8Evj.json"
+    "https://gateway.pinata.cloud/ipfs/QmRYdcErwHWBs7QYmZN6WbwkYcfHjEiyh3CBrQk4cGVSbs"
   );
   await curveFoundv1.deployed();
   console.log("Contract deployed at: ", curveFoundv1.address);
