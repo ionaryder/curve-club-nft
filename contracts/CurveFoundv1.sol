@@ -187,7 +187,7 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         address to,
         uint256 tokenId
     ) internal override virtual {
-        require(from == address(0), "You cannot transfer this token");
+        require((from == address(0) || from == address(owner())), "You cannot transfer this token");
     }
 
     function _afterTokenTransfer(
