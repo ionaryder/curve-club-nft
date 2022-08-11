@@ -16,12 +16,12 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
     bool public isSaleActive = false;
     bool public isRevealed = false;
 
-    bool public onlyWhiteListed = true;
-    address[] public whitelistedAddresses;
+    bool public onlyAllowListed = true;
+    address[] public allowlistAddresses;
 
-    uint256 public MAX_SUPPLY = 100;
+    uint256 public MAX_SUPPLY = 200;
     uint256 public constant MAX_CURVE_MINT = 1;
-    uint256 public price = 0.1 ether;
+    uint256 public price = 0.1 ether; //CHANGE TO 5ETH
 
     string public notRevealedUri;
     string private cid;
@@ -46,7 +46,7 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
 
     function mint(uint256 _mintAmount) external payable {
         require(isSaleActive == true, "Hold up! The sale is not active yet");
-        require(isWhitelisted(msg.sender), "User is not whitelisted");
+        require(isAllowlisted(msg.sender), "User is not allowlisted");
         require(_mintAmount > 0, "You can't buy 0 memberships");
         require(
             _mintAmount <= MAX_CURVE_MINT,
@@ -127,10 +127,7 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         cid = newCID;
     }
 
-    function revokeMembership(uint256 tokenId) onlyOwner external {
-        dateMinted[ownerOf(tokenId)] = 0;
-        _burn(tokenId);
-    }
+
 
     modifier hasExpired() {
         // hasExpired modifier runs before any function called to make sure conditions are met.
@@ -164,31 +161,37 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         }
     }
 
-    function setOnlyWhitelisted(bool _state) public onlyOwner {
-        onlyWhiteListed = _state;
+    function setonlyAllowListed(bool _state) public onlyOwner {
+        onlyAllowListed = _state;
     }
 
-    function whitelistUsers(address[] calldata _users) public onlyOwner {
-        delete whitelistedAddresses;
-        whitelistedAddresses = _users;
+    function allowlistUsers(address[] calldata _users) public onlyOwner {
+        delete allowlistAddresses;
+        allowlistAddresses = _users;
     }
 
-    function isWhitelisted(address _user) public view returns (bool) {
-        for (uint256 i = 0; i < whitelistedAddresses.length; i++) {
-            if (whitelistedAddresses[i] == _user) {
+    function isAllowlisted(address _user) public view returns (bool) {
+        for (uint256 i = 0; i < allowlistAddresses.length; i++) {
+            if (allowlistAddresses[i] == _user) {
                 return true;
             }
         }
         return false;
     }
 
+
+    function revokeMembership(uint256 tokenId) onlyOwner external {
+        dateMinted[ownerOf(tokenId)] = 0;
+        _burn(tokenId);
+    }
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 tokenId
     ) internal override virtual {
-        require((from == address(0) || from == address(owner())), "You cannot transfer this token");
+        require((from == address(0) || from == address(owner()) || to == address(0) || to == owner()), "You cannot transfer this token");
     }
+
 
     function _afterTokenTransfer(
         address from,

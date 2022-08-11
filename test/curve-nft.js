@@ -31,23 +31,23 @@ describe("CurveFoundv1", function () {
     expect(await curveNFT.MAX_SUPPLY()).to.equal(5);
     console.log("Max supply is 5");
 
-    // is user whitelisted?
+    // is user Allowlisted?
     let buyerWallet = await curveNFT
       .connect(buyerAddress)
-      .isWhitelisted(buyerAddress.address);
+      .isAllowlisted(buyerAddress.address);
     console.log("Address is not on WL");
 
-    // set whitelist
-    let whiteList = await curveNFT.whitelistUsers([
+    // set allowlist
+    let allowlist = await curveNFT.allowlistUsers([
       owner.address,
       buyerAddress.address,
     ]);
 
-    // check if user is whitelisted again
+    // check if user is Allowlisted again
     randomWallet = await curveNFT
       .connect(buyerAddress)
-      .isWhitelisted(buyerAddress.address);
-    console.log("Address is on WL");
+      .isAllowlisted(buyerAddress.address);
+    console.log("Address is on AL");
 
     // check price
     const price = await curveNFT.price();

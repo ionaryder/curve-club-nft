@@ -10,7 +10,7 @@ module.exports = {
     hardhat: {},
     rinkeby: {
       url: process.env.QUICKNODE_API_KEY_URL,
-      accounts: [process.env.RINKEBY_PRIVATE_KEY]
+      accounts: [process.env.CURVE_PRIVATE_KEY]
     },
     /*mainnet: {
       url: process.env.MAINNET_API_KEY,
