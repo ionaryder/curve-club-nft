@@ -48,20 +48,16 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         require(isSaleActive == true, "Hold up! The sale is not active yet");
         require(isAllowlisted(msg.sender), "User is not allowlisted");
         require(_mintAmount > 0, "You can't buy 0 memberships");
-        require(
-            _mintAmount <= MAX_CURVE_MINT,
-            "max mint amount exceeded"
-        );
-        require(
-            (_tokenIds.current() + _mintAmount) <= MAX_SUPPLY,
-            "max NFT limit exceeded"
-        );
-        require(
-            hasMinted[msg.sender] == false,
-            "You've already minted a membership!"
-        );
+        
+        require((_tokenIds.current() + _mintAmount) <= MAX_SUPPLY, "max NFT limit exceeded");        
         require(msg.value >= price * _mintAmount, "insufficient funds");
-        hasMinted[msg.sender] = true;
+        
+        if (msg.sender != owner()){
+            require(hasMinted[msg.sender] != true, "Address has already minted");
+            require( _mintAmount <= MAX_CURVE_MINT, "max mint amount exceeded");
+        }
+
+        hasMinted[msg.sender] = true; 
         dateMinted[msg.sender] = block.timestamp;
         uint256 newTokenId = _tokenIds.current();
         _tokenIds.increment();
@@ -85,7 +81,7 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
             return notRevealedUri;
         }
 
-        string memory uriStart = "https://ipfs/";
+        string memory uriStart = "ipfs://";
         string memory uriEnd = ".json";
 
         return
@@ -131,11 +127,16 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
 
     modifier hasExpired() {
         // hasExpired modifier runs before any function called to make sure conditions are met.
-        require(
+        if (msg.sender != owner()){
+
+            require(
             (dateMinted[msg.sender] + 10 * 365 * 24 * 60 * 60) > block.timestamp,
             "Your membership has expired"
         );
         _;
+
+        }
+        
     }
 
     function isMember() public view returns (bool) {
@@ -146,18 +147,23 @@ contract CurveFoundv1 is ERC721URIStorage, Ownable, ReentrancyGuard {
         }
     }
 
-    function howLongMember() public view returns (uint256) {
-        if (dateMinted[msg.sender] > 0)
-            return (block.timestamp - dateMinted[msg.sender]);
-        else return (0);
+    function howLongMember(address tokenHolder) public view returns (uint256 timeMember) {
+        if (msg.sender == tokenHolder || msg.sender == owner()){
+            if (dateMinted[tokenHolder] > 0)
+                timeMember = (block.timestamp - dateMinted[tokenHolder]);
+                
+            else return (0);
+        }
     }
 
-    function timeTilExpire() public view hasExpired returns (uint256 timeLeft) {
-        if (dateMinted[msg.sender] > 0) {
-            timeLeft =
-                (dateMinted[msg.sender] + 10 * 365 * 24 * 60 * 60) -
-                block.timestamp;
-            return timeLeft;
+    function timeTilExpire(address tokenHolder) public view hasExpired returns (uint256 timeLeft) {
+        if (msg.sender == tokenHolder || msg.sender == owner()){
+            if (dateMinted[msg.sender] > 0) {
+                timeLeft =
+                    (dateMinted[tokenHolder] + 10 * 365 * 24 * 60 * 60) -
+                    block.timestamp;
+                return timeLeft;
+            }
         }
     }
 

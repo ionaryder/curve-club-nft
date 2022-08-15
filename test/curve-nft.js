@@ -27,9 +27,9 @@ describe("CurveFoundv1", function () {
     expect(await curveNFT.isSaleActive()).to.equal(true);
     console.log("Sale is Active!");
 
-    let maxSupply = await curveNFT.setMaxSupply(5);
-    expect(await curveNFT.MAX_SUPPLY()).to.equal(5);
-    console.log("Max supply is 5");
+    let maxSupply = await curveNFT.setMaxSupply(10);
+    expect(await curveNFT.MAX_SUPPLY()).to.equal(10);
+    console.log("Max supply is 10");
 
     // is user Allowlisted?
     let buyerWallet = await curveNFT
@@ -61,6 +61,18 @@ describe("CurveFoundv1", function () {
       .mint(1, { value: "3000000000000000000" });
     console.log("Minted an NFT!");
 
+
+
+    mint_tx3 = await curveNFT
+    .connect(owner)
+    .mint(3, { value: "3000000000000000000" });
+    console.log("Owner minted 3 NFTs!");
+
+    mint_tx4 = await curveNFT
+    .connect(owner)
+    .mint(3, { value: "3000000000000000000" });
+    console.log("Owner 1 more NFT!");
+
     // get tokenURI (should be the unreaveled )
     let tokenURI = await curveNFT.tokenURI(1);
     console.log("Non revealed tokenURI: ", tokenURI);
@@ -85,11 +97,11 @@ describe("CurveFoundv1", function () {
     console.log("Is random address a member? ", isMember);
 
     // check how long buyerAddress has been a member
-    let howLongMember = await curveNFT.connect(buyerAddress).howLongMember();
+    let howLongMember = await curveNFT.connect(buyerAddress).howLongMember(buyerAddress.address)
     console.log(`You've been a member for ${howLongMember} seconds!`);
 
     // check time till expiry
-    let timeTilExpire = await curveNFT.connect(buyerAddress).timeTilExpire();
+    let timeTilExpire = await curveNFT.connect(buyerAddress).timeTilExpire(buyerAddress.address);
     console.log(`Your membership expires in ${timeTilExpire} seconds!`);
 
     // fast forward time by 5 years
@@ -98,12 +110,19 @@ describe("CurveFoundv1", function () {
     console.log("Time fast forward by 5 years");
 
     // check how long member again
-    howLongMember = await curveNFT.connect(buyerAddress).howLongMember();
+    howLongMember = await curveNFT.connect(buyerAddress).howLongMember(buyerAddress.address);
     console.log(`You've been a member for ${howLongMember} seconds!`);
 
     // check time till expiry again
-    timeTilExpire = await curveNFT.connect(buyerAddress).timeTilExpire();
+    timeTilExpire = await curveNFT.connect(buyerAddress).timeTilExpire(buyerAddress.address);
     console.log(`Your membership expires in ${timeTilExpire} seconds!`);
+
+    howLongMember = await curveNFT.connect(owner).howLongMember(buyerAddress.address);
+    console.log(`Owner checking membership: been a member for ${howLongMember} seconds!`);
+
+    // check time till expiry again
+    timeTilExpire = await curveNFT.connect(owner).timeTilExpire(buyerAddress.address);
+    console.log(`Owner checking membership: expires in ${timeTilExpire} seconds!`);
 
   
     // fast forward 6 more years (to test hasExpired)
